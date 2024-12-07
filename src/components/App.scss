@@ -1,0 +1,40 @@
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  .map-container {
+    width: 100%;
+  }
+  .form-container {
+    overflow: auto;
+    width: 700px;
+    padding: 1em;
+    > div, button {
+      margin-bottom: 1em;
+    }
+  }
+}
+
+.mariomarker {
+  background-image: url('../public/images/supermario.png');
+  background-size: 100%;
+  width: 40px;
+  height: 40px;
+  display: block;
+  cursor: pointer;
+
+  p {
+    width: 80px;
+    margin-top: -20px;
+    color: red;
+    font-size: 14px;
+  }
+}
+
+.green {
+  color: green !important;
+}
+.red {
+  color: red !important;
+}
