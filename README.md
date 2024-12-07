@@ -11,7 +11,7 @@ open http://0.0.0.0:8080/
 
 Generally, you'd provide your public Mapbox key in the .env
 
-```MAPBOX_API_KEY=pk....
-```
 If you faced this fkcn error False expression: Non-string value passed to "ts.resolveTypeReferenceDirective", 
 cure with this: https://stackoverflow.com/questions/72488958/false-expression-non-string-value-passed-to-ts-resolvetypereferencedirective
+
+![markio1](https://github.com/user-attachments/assets/e92f7217-635a-4f58-a964-fc1aed341001)
