@@ -14,7 +14,9 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Button,
+  Switch
 } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import GeoUtil from "../util/GeoUtil";
@@ -26,6 +28,10 @@ function Alert2(props) {
   return <Alert elevation={6} variant="filled" {...props} />;
 }
 
+const initialAnimationPoints = [ //todo
+  [[10.971629994349428, 50.97248444914712], [10.970829788089844, 50.97291104200522], [10.970135173051062, 50.97226815854569], [10.971139287159332, 50.97190242012579]],
+  [[10.970470997390777, 50.97262981045938], [10.969870359931008, 50.972276901354064], [10.969211280075285, 50.97286583511868], [10.969156548926208, 50.973488425594894], [10.969141055364076, 50.97404605754235], [10.9704889192505, 50.974067366116], [10.970379501564508, 50.973270848893094]]
+]
 // --------------  TABLE ---------------
 function createData(
   subject: string,
@@ -56,8 +62,6 @@ export default class App extends Component<{}, AppState> {
   // mapContainerRef: RefObject<HTMLDivElement> | HTMLElement | null;
 
   constructor(props) {
-    console.log('areasFromGeojson ', areasFromGeojson);
-
     super(props);
     const mercedesLocation =  { longitude: 10.969604155309582, latitude: 50.97299477896706 };
     this.mapContainerRef = React.createRef();
@@ -107,7 +111,7 @@ export default class App extends Component<{}, AppState> {
       container: this.mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
       center: [location.longitude, location.latitude],
-      pitch: 65,
+      pitch: 15,
       zoom: 16,
     });
     const scale = new mapboxgl.ScaleControl({
@@ -123,8 +127,8 @@ export default class App extends Component<{}, AppState> {
      
       if (!markersFromGeojson || markersFromGeojson.features?.length === 0) return;
       this.addMarkersToMap(map);
-
   });
+  
     this.setState({ map });   
   }
 
@@ -213,30 +217,50 @@ export default class App extends Component<{}, AppState> {
         .setPopup(new mapboxgl.Popup().setHTML(`<h1>${marker.properties.name}</h1><p>`))
         .on('dragend', (event) => {
           const lngLat = event.target.getLngLat(); 
-          this.setState({
-            currentCheckCoords: { name: marker.properties.name, latitude: lngLat.lat, longitude: lngLat.lng},
-          });
-          // const areas = selectedAreas.filter(a => a.active).reduce((acc, el)=> acc += el.name + ', ', '');
-          const areas = selectedAreas.filter(a => a.active);
-          console.log(areas);
-          const newTableRecord = createData(
-            marker.properties.name,
-            areas,
-            Date.now(),
-            this.validateObjectGeofencing(marker.properties.name)
-          );         
-          tableData.unshift(newTableRecord);
-          this.setState({
-            tableData
-          });
+          this.addValidationRecord(marker.properties.name, lngLat.lng, lngLat.lat)
         }).addTo(map);
         markers.push({ 
           name: marker.properties.name,
-          mapObject: Markio, classList:
-          Markio.getElement().classList, valid: true 
+          mapObject: Markio,
+          classList: Markio.getElement().classList, valid: true,
+          pointsForMotion: []
         })
     }
+      //todo
+    markers[0].pointsForMotion = initialAnimationPoints[0];
+    markers[1].pointsForMotion = initialAnimationPoints[1];
     this.setState({ markers });   
+  }
+
+  addValidationRecord(markerName: string, lng: number, lat: number) {
+    const { tableData, selectedAreas } = { ...this.state };
+    this.setState({
+      currentCheckCoords: { name: markerName, latitude: lat, longitude: lng},
+    });
+    const areas = selectedAreas.filter(a => a.active);
+    const newTableRecord = createData(
+      markerName,
+      areas,
+      Date.now(),
+      this.validateObjectGeofencing(markerName)
+    );         
+    tableData.unshift(newTableRecord);
+    this.setState({
+      tableData
+    });
+  }
+
+  animateMarker(marker) {
+    console.log(marker);    
+    const intrId = setInterval(() => {
+      if (marker.pointsForMotion?.length == 0) {
+        clearInterval(intrId);
+        return;
+      }
+      const currentLnglat = marker.pointsForMotion.shift();
+      marker.mapObject.setLngLat(currentLnglat as [number, number]);
+      this.addValidationRecord(marker.name, currentLnglat[0], currentLnglat[1])
+    }, 1400);
   }
 
   render() {
@@ -246,7 +270,8 @@ export default class App extends Component<{}, AppState> {
       showAlert,
       isInsideGeofence,
       tableData,
-      selectedAreas
+      selectedAreas,
+      markers
     } = {
       ...this.state,
     };
@@ -256,33 +281,55 @@ export default class App extends Component<{}, AppState> {
         <Card className="form-container">
         <h2>Drag Markios to check <s>for drugs</s> geofencing</h2>
         <hr></hr>
-        <FormControl component="fieldset">
-            <FormLabel component="legend">Areas to check validation</FormLabel>
-            <RadioGroup
-              aria-label="Areas"
-              name="areas"
-            >
-              { selectedAreas.map((area, i) => (
-              <div style={{position: 'relative'}} key={area.name + i}>
-                <FormControlLabel
-                  key={i}
-                  value={area.name}
-                  label={area.name}
-                  control={<Checkbox
-                    checked={area.active}
-                    onChange={(e) => {
-                      selectedAreas.find(el => el.name == area.name).active = e.target['checked'];
-                      this.setState({ selectedAreas });
-                    } } />}                    
-                  />
-                  <span className="area-color-indicator checkbox-indicator" style={{backgroundColor: area.color}} key={area.color}></span>
-                </div>
+        <aside className="handlers-container">
+          <FormControl component="fieldset">
+              <FormLabel component="legend">Areas to check validation</FormLabel>
+              <RadioGroup
+                aria-label="Areas"
+                name="areas"
+              >
+                { selectedAreas.map((area, i) => (
+                <div style={{position: 'relative'}} key={area.name + i}>
+                  <FormControlLabel
+                    key={i}
+                    value={area.name}
+                    label={area.name}
+                    control={<Checkbox
+                      checked={area.active}
+                      onChange={(e) => {
+                        selectedAreas.find(el => el.name == area.name).active = e.target['checked'];
+                        this.setState({ selectedAreas });
+                      } } />}
+                    />
+                    <span className="area-color-indicator checkbox-indicator" style={{backgroundColor: area.color}} key={area.color}></span>
+                  </div>
+                ))}
+              </RadioGroup>
+          </FormControl>
+          <FormControl component="fieldset">
+              <FormLabel component="legend">Interactions with Markios</FormLabel>
+              <ul style={{listStyle: 'none'}}>
+              { markers.map((m) => (
+                <li key={m.name}>{m.name}&nbsp;
+              <FormControlLabel style={{marginLeft: '5px'}} control={
+                <Switch onChange={(event) => {if(event.target.checked) this.animateMarker(m)}} />
+                } label="Animate" />
+              </li>
               ))}
-            </RadioGroup>
-      </FormControl>
+              </ul>
+              
+          </FormControl>
+        </aside>
 
       <hr></hr>
-
+      <Button
+        variant="contained"
+        color="secondary"
+        disabled={tableData.length < 1}
+        onClick={() => this.setState({
+          tableData: []
+        })}> Clear table
+      </Button>
       <Table aria-label="simple table">
         <TableHead>
           <TableRow>
