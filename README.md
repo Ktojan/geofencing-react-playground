@@ -14,4 +14,5 @@ Generally, you'd provide your public Mapbox key in the .env
 If you faced this fkcn error False expression: Non-string value passed to "ts.resolveTypeReferenceDirective", 
 cure with this: https://stackoverflow.com/questions/72488958/false-expression-non-string-value-passed-to-ts-resolvetypereferencedirective
 
-![markio1](https://github.com/user-attachments/assets/e92f7217-635a-4f58-a964-fc1aed341001)
+![geofence2](https://github.com/user-attachments/assets/4fe6e2b1-ea8f-466b-a42a-ee824b1557e7)
+
