@@ -16,6 +16,19 @@
   }
 }
 
+.handlers-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: ivory;
+  padding: 10px;
+
+  fieldset {
+    padding: 5px;
+    border: 1px solid gray;
+  }
+}
+
 .mariomarker {
   background-image: url('../public/images/supermario.png');
   background-size: 100%;
