@@ -8,7 +8,7 @@
         },
         "geometry": {
           "coordinates": [
-            10.9711122, 50.972089
+            10.971139287159332, 50.97190242012579
           ],
           "type": "Point"
         }
@@ -19,8 +19,8 @@
             "name": "Markio 2"
         },
         "geometry": {
-          "coordinates": [
-            10.9705348, 50.973224
+          "coordinates": [            
+            10.97128703, 50.97367153
           ],
           "type": "Point"
         }

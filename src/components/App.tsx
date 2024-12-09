@@ -59,12 +59,14 @@ interface AppState {
 
 export default class App extends Component<{}, AppState> {
   mapContainerRef: any;
+  currentAnimMarkerRef: any;
   // mapContainerRef: RefObject<HTMLDivElement> | HTMLElement | null;
 
   constructor(props) {
     super(props);
     const mercedesLocation =  { longitude: 10.969604155309582, latitude: 50.97299477896706 };
     this.mapContainerRef = React.createRef();
+    this.currentAnimMarkerRef = React.createRef();
     this.state = {
       isInsideGeofence: false,
       showAlert: false,
@@ -217,11 +219,13 @@ export default class App extends Component<{}, AppState> {
         .setPopup(new mapboxgl.Popup().setHTML(`<h1>${marker.properties.name}</h1><p>`))
         .on('dragend', (event) => {
           const lngLat = event.target.getLngLat(); 
+          console.log(lngLat);
           this.addValidationRecord(marker.properties.name, lngLat.lng, lngLat.lat)
         }).addTo(map);
         markers.push({ 
           name: marker.properties.name,
           mapObject: Markio,
+          htmlEl: el,
           classList: Markio.getElement().classList, valid: true,
           pointsForMotion: []
         })
@@ -250,17 +254,98 @@ export default class App extends Component<{}, AppState> {
     });
   }
 
+  linearInterpolation(a, b, t) {
+    if (Array.isArray(a) && Array.isArray(b)) {
+      const result = [];
+      for (let i = 0; i < Math.min(a.length, b.length); i++)
+        result[i] = a[i] * (1.0 - t) + b[i] * t;
+      return result;
+    } else {
+      return a * (1.0 - t) + b * t;
+    }
+  };
+
   animateMarker(marker) {
-    console.log(marker);    
-    const intrId = setInterval(() => {
-      if (marker.pointsForMotion?.length == 0) {
-        clearInterval(intrId);
-        return;
-      }
-      const currentLnglat = marker.pointsForMotion.shift();
+    console.log(marker);
+    console.log(marker);
+    const initialTransformValue = marker.htmlEl.style.transform;
+  //   console.log(this.mapContainerRef.current);    
+  //  this.mapContainerRef.current.interactive = false;    
+    const motionTranslateCoords = [];
+    marker.pointsForMotion.forEach(currentLnglat => {
       marker.mapObject.setLngLat(currentLnglat as [number, number]);
-      this.addValidationRecord(marker.name, currentLnglat[0], currentLnglat[1])
-    }, 1400);
+      console.log(marker.htmlEl.style.transform);
+      motionTranslateCoords.push(marker.htmlEl.style.transform.match(/\d+px/g).map(el => Number(el.slice(0, 3)))); //todo regexp
+// (2) [566, 599]
+// (2) ['613px', '540px']
+// (2) ['536px', '478px']
+// (2) ['472px', '572px']
+// (2) ['569px', '627px']
+      marker.htmlEl.style.transform= initialTransformValue;
+    });
+    console.log(motionTranslateCoords)
+
+    let zeroTime, lengthInSec = 6, animationTime = 0.0, lastAnimPhase = 0, start = [566, 599], end = [362, 276];
+
+    function step(timestamp) {
+      if (zeroTime === undefined) {
+        zeroTime = timestamp;
+      }
+      let animPhase;
+      const elapsed = timestamp - zeroTime;
+      animationTime += 0.1 * elapsed;
+      animPhase = 0.0001 * animationTime / lengthInSec;
+      console.log('animPhase', animPhase.toFixed(3));
+      // if (animPhase - lastAnimPhase > 25) {
+        lastAnimPhase = animPhase;
+          const position = this.linearInterpolation(start, end, animPhase);
+          let pos = position.map(el => Math.round(el)).join('px,') + 'px';
+          console.log(pos);
+
+        marker.htmlEl.style.transform = `translate(${pos})`;
+      // }
+      const id = requestAnimationFrame(step.bind(this));
+      if (animPhase > 0.5) {
+        console.log(marker);
+        console.log(marker.mapObject.getLngLat());
+        window.cancelAnimationFrame(id);
+      }
+    }
+
+      requestAnimationFrame(step.bind(this))
+
+      // this.addValidationRecord(marker.name, currentLnglat[0], currentLnglat[1])
+
+      // function frameCustomFunction(timestamp) {
+      //   if (this.animationIsStopped) return;
+      //   animationIndex %= animations.length;
+      //   const current = animations[animationIndex];
+      //   let animPhase;
+      //   if (animationTime < current.duration) {
+      //     // Normalize the duration between 0 and 1 to interpolate the animation
+      //     animPhase = animationTime / current.duration;
+      //     // log info for each one of 250 animation frames
+      //     if (Math.round(animationTime) % 250 == 0) console.log('Animation number ', (animationIndex+1) + ' \n phase: ' + (animPhase * 100).toFixed(1) + '% \n  ms passed from start: ' + Math.round(animationTime));
+      //     current.animate(animPhase);
+      //   }
+  
+      //   const elapsed = timestamp - lastTime;
+      //   animationTime += elapsed;
+      //   lastTime = timestamp;
+  
+      //   if (animationTime > current.duration) {
+      //     animationIndex++;
+      //     animationTime = 0.0;
+      //     console.log(`---- START ANIMATION ${animationIndex} ------`)
+      //   }
+  
+      //   const animationId = window.requestAnimationFrame(frameCustomFunction.bind(this));
+      //   if (animationIndex == animations.length && animPhase > 0.99) {
+      //     window.cancelAnimationFrame(animationId);
+      //     setTimeout(() => this.stopCameraAnimation(), 1000 * this.config.secondsBeforeToggleModes);
+      //   }
+      // }
+      // window.requestAnimationFrame(frameCustomFunction.bind(this));
   }
 
   render() {
