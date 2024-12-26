@@ -21,6 +21,7 @@ import {
 import { Alert } from "@material-ui/lab";
 import GeoUtil from "../util/GeoUtil";
 import { MAPBOX_API_KEY } from "../../env";
+import { initialAnimationPoints } from '../constants/AnimationConstants'
 import markersFromGeojson from '../public/geofiles/markers.geo.json'
 import areasFromGeojson from '../public/geofiles/initial-areas.geo.json'
 
@@ -28,10 +29,7 @@ function Alert2(props) {
   return <Alert elevation={6} variant="filled" {...props} />;
 }
 
-const initialAnimationPoints = [ //todo
-  [[10.971629994349428, 50.97248444914712], [10.970829788089844, 50.97291104200522], [10.970135173051062, 50.97226815854569], [10.971139287159332, 50.97190242012579]],
-  [[10.970470997390777, 50.97262981045938], [10.969870359931008, 50.972276901354064], [10.969211280075285, 50.97286583511868], [10.969156548926208, 50.973488425594894], [10.969141055364076, 50.97404605754235], [10.9704889192505, 50.974067366116], [10.970379501564508, 50.973270848893094]]
-]
+
 // --------------  TABLE ---------------
 function createData(
   subject: string,
@@ -222,13 +220,11 @@ export default class App extends Component<{}, AppState> {
         markers.push({ 
           name: marker.properties.name,
           mapObject: Markio,
-          classList: Markio.getElement().classList, valid: true,
+          classList: Markio.getElement().classList,
+          valid: true,
           pointsForMotion: []
         })
     }
-      //todo
-    markers[0].pointsForMotion = initialAnimationPoints[0];
-    markers[1].pointsForMotion = initialAnimationPoints[1];
     this.setState({ markers });   
   }
 
@@ -250,8 +246,19 @@ export default class App extends Component<{}, AppState> {
     });
   }
 
+  toggleAnimation(start, marker, index) {
+    if (start) {
+      marker.pointsForMotion = [...initialAnimationPoints[index]];
+      this.animateMarker(marker)
+    } else {
+      marker.pointsForMotion = [];
+    }
+  }
+
   animateMarker(marker) {
-    console.log(marker);    
+    if (!marker.pointsForMotion || marker.pointsForMotion.length == 0) return;
+    let counter = 1, coef =  Math.floor(30 / marker.pointsForMotion.length);
+    console.log(marker.pointsForMotion.length, 'coef: ', coef);  
     const intrId = setInterval(() => {
       if (marker.pointsForMotion?.length == 0) {
         clearInterval(intrId);
@@ -259,8 +266,9 @@ export default class App extends Component<{}, AppState> {
       }
       const currentLnglat = marker.pointsForMotion.shift();
       marker.mapObject.setLngLat(currentLnglat as [number, number]);
-      this.addValidationRecord(marker.name, currentLnglat[0], currentLnglat[1])
-    }, 1400);
+      if (counter % (5-coef) == 0) this.addValidationRecord(marker.name, currentLnglat[0], currentLnglat[1]);
+      counter++;
+    }, 250*coef);
   }
 
   render() {
@@ -309,10 +317,10 @@ export default class App extends Component<{}, AppState> {
           <FormControl component="fieldset">
               <FormLabel component="legend">Interactions with Markios</FormLabel>
               <ul style={{listStyle: 'none'}}>
-              { markers.map((m) => (
+              { markers.map((m, i) => (
                 <li key={m.name}>{m.name}&nbsp;
               <FormControlLabel style={{marginLeft: '5px'}} control={
-                <Switch onChange={(event) => {if(event.target.checked) this.animateMarker(m)}} />
+                <Switch onChange={(event) => this.toggleAnimation(event.target.checked, m, i) } />
                 } label="Animate" />
               </li>
               ))}
