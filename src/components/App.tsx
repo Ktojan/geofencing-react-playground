@@ -287,7 +287,7 @@ export default class App extends Component<{}, AppState> {
       <div className="container">
         <div ref={this.mapContainerRef} className="map-container" />
         <Card className="form-container">
-        <h2>Drag Markios to check <s>for drugs</s> geofencing</h2>
+        <h2>Leaflet + OSM integration</h2>
         <hr></hr>
         <aside className="handlers-container">
           <FormControl component="fieldset">
