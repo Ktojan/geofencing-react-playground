@@ -3,7 +3,7 @@ import { TerraDraw, TerraDrawMapboxGLAdapter, TerraDrawFreehandMode, TerraDrawPo
 import { useMap } from 'react-leaflet';
 import { useState, useEffect } from 'react';
 import * as L from "leaflet";
-import { convertCoordsToLatLng } from "../util/Functions";
+import { calculateMarkerCoordsForObject, convertCoordsToLatLng } from "../util/Functions";
 import { SELECT_MODE_CONFIG } from '../constants/DrawingConstants'
 
 const DEFAULT_MODE = 'select';
@@ -42,7 +42,9 @@ export default function DrawToolbar({ setDrawObject }) {
           const currentDraw = convertCoordsToLatLng(draw.getSnapshot()[0]);
           console.log('------- Finished draw action: ', context.action,  '.--------');
           console.log(currentDraw); //todo handle multiple draws
-          setDrawObject(currentDraw);
+          const marker = { name: 'new area marker', coords: [] };
+          marker.coords = calculateMarkerCoordsForObject(currentDraw) || currentDraw.geometry.coordinates[0][0];
+          setDrawObject({ draw: currentDraw, marker });    
         } 
       }); 
     }
