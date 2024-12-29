@@ -2,6 +2,65 @@
     "type": "FeatureCollection",
     "features": [
         {
+            "id": "4c824cfd-1f72-49c2-9e11-d6af4505a8a7",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            53.062380877,
+                            8.820193314
+                        ],
+                        [
+                            53.062045609,
+                            8.820815586
+                        ],
+                        [
+                            53.061271903,
+                            8.821287655
+                        ],
+                        [
+                            53.0607303,
+                            8.822896981
+                        ],
+                        [
+                            53.059737344,
+                            8.827746415
+                        ],
+                        [
+                            53.061052683,
+                            8.828475975
+                        ],
+                        [
+                            53.060910835,
+                            8.830042386
+                        ],
+                        [
+                            53.061787708,
+                            8.830578827
+                        ],
+                        [
+                            53.063489823,
+                            8.821630978
+                        ],
+                        [
+                            53.062509825,
+                            8.821867012
+                        ],
+                        [
+                            53.062380877,
+                            8.820193314
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "mode": "polygon",
+                "name": "Bremen musicians camp"
+            }
+        },
+        {
             "id": "0433ef66-f78f-41f8-913d-16f69bfca6db",
             "type": "Feature",
             "geometry": {
@@ -46,7 +105,7 @@
             "properties": {
                 "mode": "polygon",
                 "selected": true,
-                "name": "Led Zeppelin area"
+                "name": "Gardens or cemetry maybe"
             }
         },
         {
