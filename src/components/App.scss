@@ -49,12 +49,13 @@
     }
   }
 
-  .leaflet-control-layers {
-    margin-top: -40px !important; // to compencate space for search that is higher inside right-top control
-  }
+  // .leaflet-control-layers {
+  //   margin-top: -40px !important; // to compencate space for search that is higher inside right-top control
+  // }
 
   .geo-search {
     right: 30vw;
+    margin-top: -40px !important;
 
     &.open input, button { 
       height: 36px;

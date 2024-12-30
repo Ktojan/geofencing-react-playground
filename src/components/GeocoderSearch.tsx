@@ -6,6 +6,15 @@ import '@sjaakp/leaflet-search/dist/leaflet-search.js'; //https://github.com/sja
 
 export default function GeocoderSearch() {
   const mapInstance = useMap();
-  mapInstance.addControl((L.control as any).search());
+
+  const [geocoder, setGeocoder] = useState(null)
+
+  useEffect(() => {
+    if (!mapInstance || geocoder) return;
+    const geocoderInstance = (L.control as any).search();
+    mapInstance.addControl(geocoderInstance);
+    setGeocoder(geocoderInstance);
+  }, [mapInstance])
+
   return null
 }
