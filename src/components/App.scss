@@ -48,3 +48,24 @@
       border: 4px solid #0854CE;
     }
   }
+
+  .leaflet-control-layers {
+    margin-top: -40px !important; // to compencate space for search that is higher inside right-top control
+  }
+
+  .geo-search {
+    right: 30vw;
+
+    &.open input, button { 
+      height: 36px;
+      border: 2px solid #0854CE;
+    }
+
+    &.open input { 
+      padding-left: 12px !important;
+      font-size: 16px;
+    }
+    &.open button { 
+      padding: 2px 6px;
+    }
+  }

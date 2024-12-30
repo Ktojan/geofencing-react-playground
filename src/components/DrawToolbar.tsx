@@ -26,7 +26,6 @@ export default function DrawToolbar({ setDrawObject }) {
     drawInstance.start();
     drawInstance.setMode(DEFAULT_MODE);
     setDraw(drawInstance);
-    console.log('Draw instance: ', draw);
 
     // Ensure clear up on dismount
     return () => {

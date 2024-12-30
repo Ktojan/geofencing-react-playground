@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import "./App.scss";
 import DrawToolbar from "./DrawToolbar";
+import GeocoderSearch from "./GeocoderSearch";
 import { layoutStyle, headerStyle, siderStyle } from "../constants/UIConstants";
 // Design, UI components
 import { Layout } from "antd";
@@ -65,7 +66,7 @@ export default function App() {
           </Form>
         </Sider>
         <Content>
-          <MapContainer center={initialLocation.coordsLeaflet as LatLngTuple} zoom={initialLocation.initialZoom}>
+          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple} zoom={initialLocation.initialZoom}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer name="OSM Basic" checked={true}>
                 <TileLayer url="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
@@ -79,19 +80,23 @@ export default function App() {
                 <TileLayer url="http://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png"
                   attribution='&copy; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community' />
               </LayersControl.BaseLayer>
-              {/* Grouped existing objects with common fill color, other then current for drawing */}
-              <LayersControl.Overlay name="Saved objects" checked={true}>
-                <FeatureGroup pathOptions={purpleOptions}>
-                  {areasFromGeojson.features.map((area, i) => (
+              {/* todo optimize handling cases with no initial objects */}
+              { areasFromGeojson && areasFromGeojson['features'] && areasFromGeojson['features'].length>0 &&
+               <LayersControl.Overlay name="Saved objects" checked={true}>
+                <FeatureGroup pathOptions={purpleOptions}> 
+                  {areasFromGeojson['features'].map((area, i) => (
                     <><Polygon
                       positions={area.geometry.coordinates[0] as LatLngTuple[]}
-                      stroke={true} key={i}>
+                      stroke={true} key={area.properties.name + i}>
                       <Popup key={area.properties.name}><b>Area: </b> {area.properties.name}</Popup>
                     </Polygon>
                     </>)
                   )}
                 </FeatureGroup>
-              </LayersControl.Overlay>
+              </LayersControl.Overlay> }
+
+              {/* todo optimize handling cases with no initial objects */}
+              { initialMarkers && initialMarkers.length > 0 &&
               <LayersControl.Overlay name="Markers for saved objects" checked={true}>
                 <FeatureGroup>
                   {initialMarkers.map(m => (
@@ -101,11 +106,12 @@ export default function App() {
                   ))}
                 </FeatureGroup>
               </LayersControl.Overlay>
+              }
             </LayersControl>
             <DrawToolbar setDrawObject={setDrawObject}></DrawToolbar>
             <ScaleControl position="bottomleft" imperial={false} metric={true} />
-            {/* 
-           <GeocoderComponent/> */}
+            
+           <GeocoderSearch/>
 
           </MapContainer>
         </Content>
