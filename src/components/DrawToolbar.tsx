@@ -3,23 +3,25 @@ import { TerraDraw, TerraDrawMapboxGLAdapter, TerraDrawFreehandMode, TerraDrawPo
 import { useMap } from 'react-leaflet';
 import { useState, useEffect } from 'react';
 import * as L from "leaflet";
+import type { LatLngTuple, Map } from 'leaflet';
 import { calculateMarkerCoordsForObject, convertCoordsToLatLng } from "../util/Functions";
-import { SELECT_MODE_CONFIG } from '../constants/DrawingConstants'
+import { Draw_buttons, DrawButton, SELECT_MODE_CONFIG } from '../constants/DrawingConstants'
+import { DrawObjectType, Marker } from './App';
 
 const DEFAULT_MODE = 'select';
 
 export default function DrawToolbar({ setDrawObject }) {
 
-  const map = useMap(); //an instance of Leaflet native Map with all API available. Yeah, useful hook.
-  const [currentMode, setCurrentMode] = useState(DEFAULT_MODE) //default mode
-  const [draw, setDraw] = useState(null as TerraDraw)
+  const map: Map = useMap(); //an instance of Leaflet native Map with all API available. Yeah, useful hook.
+  const [currentMode, setCurrentMode] = useState<string>(DEFAULT_MODE) //default mode
+  const [draw, setDraw] = useState<TerraDraw>(null)
 
   useEffect(() => {
     if (!map || draw) return;
     const adapter = new TerraDrawLeafletAdapter({ map, lib: L });
     const modes = [new TerraDrawPolygonMode(), new TerraDrawRectangleMode(), new TerraDrawFreehandMode(),
       new TerraDrawSelectMode(SELECT_MODE_CONFIG as any)];  
-    const drawInstance = new TerraDraw({
+    const drawInstance: TerraDraw = new TerraDraw({
       adapter: adapter,
       modes: modes 
     });  
@@ -38,27 +40,22 @@ export default function DrawToolbar({ setDrawObject }) {
     if (draw) {
       draw.on("finish", (id: string, context: { action: string, mode: string }) => {
         if (['draw', 'dragFeature', 'dragCoordinate'].includes(context.action)) {
-          const currentDraw = convertCoordsToLatLng(draw.getSnapshot()[0]);
+          const currentDraw: GeoJSON.Feature = convertCoordsToLatLng(draw.getSnapshot()[0]);
           console.log('------- Finished draw action: ', context.action,  '.--------');
           console.log(currentDraw); //todo handle multiple draws
-          const marker = { name: 'new area marker', coords: [] };
-          marker.coords = calculateMarkerCoordsForObject(currentDraw) || currentDraw.geometry.coordinates[0][0];
-          setDrawObject({ draw: currentDraw, marker });    
+          const marker: Marker = { name: 'new area marker', coords: [] as LatLngTuple[] };
+          marker.coords = calculateMarkerCoordsForObject(currentDraw) || currentDraw.geometry['coordinates'][0][0];
+          setDrawObject({ draw: currentDraw, marker } as DrawObjectType);    
         } 
       }); 
     }
   }, [draw]) 
 
-  const Draw_buttons = [
-    { title: "Draw Polygon", button_mode: 'polygon', icon_link: 'draw-polygon.png' },
-    { title: "Draw Rectangle", button_mode: 'rectangle', icon_link: 'rectangle.png' },
-    { title: "Freehand drawing", button_mode: 'freehand', icon_link: 'pencil.png' },
-    { title: "Select & Modify/Remove", button_mode: 'select', icon_link: 'select-mode.png' },
-  ];
+
 
   return <div className='draw-toolbar'>
         <label>DRAW</label>
-        { Draw_buttons.map(b => (<button
+        { Draw_buttons.map((b: DrawButton) => (<button
         key={b.title}
         title={b.title}
         disabled={!draw}
@@ -67,7 +64,7 @@ export default function DrawToolbar({ setDrawObject }) {
             draw.setMode(b.button_mode);
             setCurrentMode(b.button_mode);
         }}>
-        <img src={`./public/icons/${b.icon_link}`} /> {/* todo in config public folder as default */}
+        <img src={`../public/icons/${b.icon_link}`} /> {/* todo in config public folder as default */}
       </button>)) }
     </div>
 }

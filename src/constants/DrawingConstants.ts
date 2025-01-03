@@ -1,3 +1,15 @@
+export type DrawButton = {
+  title: string,
+  button_mode: string,
+  icon_link?: string
+}
+export const Draw_buttons: DrawButton[] = [
+  { title: "Draw Polygon", button_mode: 'polygon', icon_link: 'draw-polygon.png' },
+  { title: "Draw Rectangle", button_mode: 'rectangle', icon_link: 'rectangle.png' },
+  { title: "Freehand drawing", button_mode: 'freehand', icon_link: 'pencil.png' },
+  { title: "Select & Modify/Remove", button_mode: 'select', icon_link: 'select-mode.png' },
+];
+
 export const SELECT_MODE_CONFIG = {
     dragEventThrottle: 3,
     flags: {

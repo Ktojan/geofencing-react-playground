@@ -5,16 +5,33 @@ import GeocoderSearch from "./GeocoderSearch";
 import { layoutStyle, headerStyle, siderStyle } from "../constants/UIConstants";
 // Design, UI components
 import { Layout } from "antd";
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Form, Input } from 'antd';
 // Mapping libs and files
 import * as L from "leaflet";
 import type { LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FeatureGroup, MapContainer, Polygon, Popup, ScaleControl, TileLayer, LayersControl, Marker, useMap } from 'react-leaflet'; //https://react-leaflet.js.org/
+import { FeatureGroup, MapContainer, Polygon, Popup, ScaleControl, TileLayer, LayersControl, Marker } from 'react-leaflet'; //https://react-leaflet.js.org/
 import areasFromGeojson from '../public/geofiles/initial-areas.geo.json'
 import { initialMarkers } from '../public/geofiles/initial-markers'
 
-const initialLocation = {
+export type CustomLocation = {
+  name: string,
+  coordsLeaflet: LatLngTuple,
+  initialZoom?: number,
+}
+
+export type Marker = {
+  name: string,
+  coords: LatLngTuple[]
+}
+
+export type DrawObjectType = {
+  draw: GeoJSON.Feature,
+  marker?: Marker
+}
+
+
+const initialLocation: CustomLocation = {
   name: 'Germany geocenter', initialZoom: 7, coordsLeaflet: [51.163715932396634, 10.447797582382846],
 }
 const greenOptions = { color: 'green', fillColor: 'green' }
@@ -23,8 +40,8 @@ const purpleOptions = { color: 'purple', fillColor: 'purple' }
 const { Header, Sider, Content } = Layout;
 
 export default function App() {
-  const [drawObject, setDrawObject] = useState(null);
-  const markericon = L.icon({
+  const [drawObject, setDrawObject] = useState<DrawObjectType>(null);
+  const markericon: L.Icon = L.icon({
     iconUrl: '../public/icons/bookmark-marker.svg',
     iconSize: [30, 30],
   });
@@ -66,7 +83,7 @@ export default function App() {
           </Form>
         </Sider>
         <Content>
-          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple} zoom={initialLocation.initialZoom}>
+          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple} zoom={initialLocation.initialZoom || 12}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer name="OSM Basic" checked={true}>
                 <TileLayer url="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
