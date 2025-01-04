@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 export const headerStyle: React.CSSProperties = {
     textAlign: 'left',
     color: '#fff',
@@ -17,3 +19,16 @@ export const headerStyle: React.CSSProperties = {
     overflow: 'hidden',
     width: '100%',
   };
+
+export const markericon: L.Icon = L.icon({
+    iconUrl: '../public/icons/bookmark-marker.svg',
+    iconSize: [30, 30],
+  });
+export const pointicon: L.Icon = L.icon({
+    iconUrl: '../public/icons/point.svg',
+    iconSize: [15, 20],
+});
+export const noicon: L.Icon = L.icon({
+    iconUrl: '../public/icons/point.svg',
+    iconSize: [0, 0],
+});

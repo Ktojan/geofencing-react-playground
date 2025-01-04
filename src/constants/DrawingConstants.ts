@@ -7,6 +7,7 @@ export const Draw_buttons: DrawButton[] = [
   { title: "Draw Polygon", button_mode: 'polygon', icon_link: 'draw-polygon.png' },
   { title: "Draw Rectangle", button_mode: 'rectangle', icon_link: 'rectangle.png' },
   { title: "Freehand drawing", button_mode: 'freehand', icon_link: 'pencil.png' },
+  { title: "Points", button_mode: 'point', icon_link: 'point.svg' },
   { title: "Select & Modify/Remove", button_mode: 'select', icon_link: 'select-mode.png' },
 ];
 
@@ -44,7 +45,13 @@ export const SELECT_MODE_CONFIG = {
             deletable: true,
           },
         },
-      }
+      },
+      point: {
+        feature: {
+          draggable: false,
+          deletable: true
+        },
+      },
     },
     styles: {
       selectedPolygonColor: '#f6cd63',
@@ -56,6 +63,7 @@ export const SELECT_MODE_CONFIG = {
       midPointColor: '#f6cd63',
       midPointOutlineColor: '#f5f5f5',
       midPointWidth: 3,
-      midPointOutlineWidth: 2
+      midPointOutlineWidth: 2,
+      selectedPointWidth: 3
     }
   }
