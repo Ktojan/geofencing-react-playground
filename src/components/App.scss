@@ -1,3 +1,6 @@
+  $top-gap: 10px;
+  $litelog_blue: #0854CE;
+  
   .leaflet-container {
     height: 90vh;
     width: 100%;
@@ -8,7 +11,7 @@
   .draw-toolbar {
     z-index: 1000; //todo
     position: absolute;
-    top: 10px;
+    top: $top-gap;
     left: 10px;
     width: 80px;
     height: fit-content;
@@ -16,16 +19,16 @@
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    border: 3px dashed #0854CE;
+    border: 3px dashed $litelog_blue;
     border-radius: 10px;
 
     label {
       width: 100%;
       height: fit-content;
       text-align: center;
-      border-bottom: 2px solid #0854CE;
+      border-bottom: 2px solid $litelog_blue;
       background-color: bisque;
-      color: #0854CE;
+      color: $litelog_blue;
       font-size: x-large;
       margin-bottom: 10px;
     }
@@ -36,7 +39,7 @@
       z-index: 1000;
       height: 42px;
       width: 42px;
-      border: 1px solid #0854CE;
+      border: 1px solid $litelog_blue;
       border-radius: 7px;
       cursor: pointer;
 
@@ -46,25 +49,7 @@
     }
 
     .is-current {
-      border: 4px solid #0854CE;
-    }
-  }
-
-  .geo-search {
-    right: 30vw;
-    margin-top: -120px !important; //todo
-
-    &.open input, button { 
-      height: 36px;
-      border: 2px solid #0854CE;
-    }
-
-    &.open input { 
-      padding-left: 12px !important;
-      font-size: 16px;
-    }
-    &.open button { 
-      padding: 2px 6px;
+      border: 4px solid $litelog_blue;
     }
   }
 
@@ -78,4 +63,21 @@
     &:before {
       display: none
     }
+  }
+
+
+  /////  AddressSearch styles
+  .geosearch-wrapper {
+    z-index: 1000;
+    position: relative;
+    width: 35%;
+    left: 15%;
+    top: $top-gap;
+  }
+  .geosearch{
+    width: 100%;
+  }
+  .geosearch-suggestions {
+    left: 20% !important;
+    top: 40px !important;
   }

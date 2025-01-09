@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import DrawToolbar from "./DrawToolbar";
+import AddressSearch from "./AddressSearch";
+import MarkersPoints from "./Markers_Points";
 import "./App.scss";
 // Design, UI components
 import { Layout } from "antd";
@@ -8,14 +11,11 @@ import { layoutStyle, headerStyle, siderStyle } from "../constants/UIConstants";
 import * as L from "leaflet";
 import type { LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import DrawToolbar from "./DrawToolbar";
-import GeocoderSearch from "./GeocoderSearch";
-import MarkersPoints from "./Markers_Points";
 import { FeatureGroup, MapContainer, Polygon, Popup, ScaleControl, ZoomControl, TileLayer, LayersControl } from 'react-leaflet'; //https://react-leaflet.js.org/
 import areasFromGeojson from '../public/geofiles/initial-areas.geo.json' //todo maybe import from ts or some other way
-import { initialMarkers } from '../public/geofiles/initial-markers'
-import { CustomLocation, DrawObjectType } from '../constants/types'
-
+import { initialMarkers } from '../public/geofiles/initial-markers';
+import { CustomLocation, DrawObjectType } from '../constants/types';
+import { convertCoordsToLatLng } from '../util/Functions';
 
 const initialLocation: CustomLocation = {
   name: 'Germany geocenter', initialZoom: 7, coordsLeaflet: [51.163715932396634, 10.447797582382846],
@@ -27,15 +27,19 @@ const { Header, Sider, Content } = Layout;
 
 export default function App() {
   const [drawObject, setDrawObject] = useState<DrawObjectType>(null);
+  const [selectedBySearchObject, setSelectedBySearchObject] = useState<DrawObjectType>(null)
 
-  function onSavedDrawProps(values) {
-    if (!drawObject) return;
+  function saveObjectToStore(values: {areaname: string}) {
+    console.log('drawObject', drawObject);
+    console.log('selectedBySearchObject', selectedBySearchObject);
+    const drawToSave = drawObject ? drawObject
+     : { draw: convertCoordsToLatLng(selectedBySearchObject['draw']), marker: selectedBySearchObject.marker };
     if (values.areaname) {
-      drawObject['draw']['properties'].name = values.areaname;
-      drawObject['marker'].name = values.areaname;
+      drawToSave['draw']['properties'].name = values.areaname;
+      drawToSave['marker'].name = values.areaname;
     }
-    console.log('----- Push to store of areas ', drawObject['draw']);
-    console.log('----- Push to array of markers ', drawObject['marker']);
+    console.log('----- Push to store of areas ', drawToSave['draw']);
+    console.log('----- Push to array of markers ', drawToSave['marker']);
   };
 
   return (
@@ -48,16 +52,15 @@ export default function App() {
             layout="vertical"
             style={{ maxWidth: '90%', margin: '40px auto' }}
             initialValues={{ areaname: '' }}
-            onFinish={onSavedDrawProps}
-            autoComplete="off"
+            onFinish={saveObjectToStore}
           >
             <Form.Item
               label="NEW AREA NAME"
               name="areaname"
-            ><Input width="80" />
+            ><Input width="80"/>
             </Form.Item>
             <Form.Item label={null}>
-              <Button type="primary" htmlType="submit" disabled={!drawObject}>
+              <Button type="primary" htmlType="submit" disabled={!(selectedBySearchObject || drawObject)}>
                 Save
               </Button>
             </Form.Item>
@@ -65,7 +68,8 @@ export default function App() {
         </Sider>
 
         <Content>
-          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple} zoom={initialLocation.initialZoom || 12} zoomControl={false}>
+          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple}
+            zoom={initialLocation.initialZoom || 12} zoomControl={false}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer name="OSM Basic" checked={true}>
                 <TileLayer url="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
@@ -102,13 +106,13 @@ export default function App() {
                 </LayersControl.Overlay>
               }
             </LayersControl>
-            
-            <DrawToolbar setDrawObject={setDrawObject}></DrawToolbar>
+            {/* if user sets an object with help of AddressSearch then we start drawing with it, otherwise empty draw */}
+            <AddressSearch setSelectedBySearchObject={setSelectedBySearchObject}/>
+            <DrawToolbar setDrawObject={setDrawObject} selectedBySearchObject={selectedBySearchObject}></DrawToolbar>
 
             <ScaleControl position="bottomleft" imperial={false} metric={true} />
             <ZoomControl position="topright"/>
 
-            <GeocoderSearch/>
           </MapContainer>
         </Content>
       </Layout>
