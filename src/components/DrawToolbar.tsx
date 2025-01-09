@@ -1,5 +1,5 @@
 import { TerraDraw, TerraDrawFreehandMode, TerraDrawPolygonMode, TerraDrawRectangleMode, TerraDrawSelectMode, TerraDrawLeafletAdapter, 
-   TerraDrawPointMode} from 'terra-draw' //https://github.com/JamesLMilner/terra-draw/tree/main
+   TerraDrawPointMode, TerraDrawLineStringMode} from 'terra-draw' //https://github.com/JamesLMilner/terra-draw/tree/main
 import { useMap } from 'react-leaflet';
 import { useState, useEffect } from 'react';
 import * as L from "leaflet";
@@ -12,15 +12,17 @@ import { Switch } from 'antd';
 
 const DEFAULT_MODE = 'select';
 
-export default function DrawToolbar({ setDrawObject }) {
+export default function DrawToolbar({ setDrawObject, selectedBySearchObject }) {
 
   const map: Map = useMap(); //an instance of Leaflet native Map with all API available. Yeah, useful hook.
-  const [currentMode, setCurrentMode] = useState<string>(DEFAULT_MODE) //default mode
-  const [draw, setDraw] = useState<TerraDraw>(null)
+  const [currentMode, setCurrentMode] = useState<string>(DEFAULT_MODE);
+  const [draw, setDraw] = useState<TerraDraw>(null);
 
   useEffect(() => {
-    if (map || !draw) initializeDraw();
-  }, [map])
+    if (!draw) initializeDraw(); 
+    if (selectedBySearchObject) setTimeout(() => { //without it the drawn object looks very blured while happens animation to new point of map
+        addObjectToDraw() }, 1500);
+  }, [map, selectedBySearchObject])
 
   useEffect(() => {
     // receive drawn objects when finished whether drawing, drag point or drag hole object
@@ -29,8 +31,6 @@ export default function DrawToolbar({ setDrawObject }) {
         if (['draw', 'dragFeature', 'dragCoordinate'].includes(context.action) && context.mode!== "point") {
           const object: any = draw.getSnapshot()[0];
           const currentDraw: GeoJSON.Feature = convertCoordsToLatLng(object);
-          console.log('----- Finished draw action: ', context.action,  '.--------');
-          console.log(currentDraw); //todo handle multiple draws
           const marker: Marker = { name: 'new area marker', coords: [0 ,0] as LatLngTuple };
           marker.coords = calculateMarkerCoordsForObject(currentDraw) || currentDraw.geometry['coordinates'][0][0];
           setDrawObject({ draw: currentDraw, marker } as DrawObjectType);    
@@ -48,24 +48,39 @@ export default function DrawToolbar({ setDrawObject }) {
       }); 
       draw.on("change", (ids, type) => {
         if (type === "delete") {  //todo handle other objects beside points and markers if needed
-          console.log('-------- Remove from store object with ID: ', ids);
+          //console.log('-------- Remove from store object with ID: ', ids);
         }
       });
     }
   }, [draw]) 
 
   function initializeDraw() {
-    setCurrentMode(DEFAULT_MODE);
     const adapter = new TerraDrawLeafletAdapter({ map, lib: L });
     const modes = [new TerraDrawPolygonMode(), new TerraDrawRectangleMode(), new TerraDrawFreehandMode(), new TerraDrawPointMode(),
-      new TerraDrawSelectMode(SELECT_MODE_CONFIG as any)];  
+      new TerraDrawSelectMode(SELECT_MODE_CONFIG as any), new TerraDrawLineStringMode()];  
     const drawInstance: TerraDraw = new TerraDraw({
       adapter: adapter,
       modes: modes 
-    });  
+    }); 
     drawInstance.start();
     drawInstance.setMode(DEFAULT_MODE);
+    setCurrentMode(DEFAULT_MODE);
     setDraw(drawInstance);
+  }
+
+  function addObjectToDraw() {
+    if(!selectedBySearchObject.draw?.geometry) return;
+    draw.clear();
+    setDrawObject(null);    
+    const result = draw.addFeatures([
+      {
+        type: "Feature",
+        geometry: selectedBySearchObject.draw.geometry,
+        properties: {
+          mode: selectedBySearchObject.draw.geometry.type.toLowerCase(), // drawing modes https://github.com/JamesLMilner/terra-draw/blob/main/guides/4.MODES.md#drawing-modes
+        },
+      },
+    ]);    
   }
 
   function toggleDrawMode(checked: boolean) {
