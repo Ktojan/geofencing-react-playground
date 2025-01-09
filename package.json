@@ -1,14 +1,14 @@
 {
   "name": "geofencing-react-playground",
-  "version": "1.1.0",
-  "description": "Demo for drawing and saving objects on Leaflet + Geocoding",
+  "version": "2.0.0",
+  "description": "Demo for searching(geocoding), drawing and saving objects on Leaflet + OSM",
   "main": "index.js",
   "scripts": {
     "start": "npx webpack serve --config webpack.config.dev.ts"
   },
   "author": "Andrey Karpovich",
   "dependencies": {
-    "@sjaakp/leaflet-search": "^1.0.2",
+    "@tanstack/react-query": "^4.13.0",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
