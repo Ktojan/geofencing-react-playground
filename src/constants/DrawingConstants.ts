@@ -46,6 +46,16 @@ export const SELECT_MODE_CONFIG = {
           },
         },
       },
+      linestring: {
+        feature: {
+          draggable: true,
+          coordinates: {
+            midpoints: true,
+            draggable: true,
+            deletable: true,
+          },
+        },
+      },
       point: {
         feature: {
           draggable: false,

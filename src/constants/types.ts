@@ -22,3 +22,22 @@ export type CustomLocation = {
     marker?: Marker,
     points?: Point[]
   }
+
+  export type NominatimResult = {
+    boundingbox: Array<string>;
+    display_name: string;
+    importance: number;
+    geojson: GeoJSON.Feature;
+    lat: string;
+    licence: string;
+    lon: string;
+    osm_id: number;
+    osm_type: string;
+    place_id: string;
+    place_rank: number;
+    type: string;
+    category?: string;
+    value?: string
+    custom_note?: string
+  }
+
