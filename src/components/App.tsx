@@ -2,10 +2,11 @@ import { useState } from 'react';
 import DrawToolbar from "./DrawToolbar";
 import AddressSearch from "./AddressSearch";
 import MarkersPoints from "./Markers_Points";
+import SidePanel from "./SidePanel";
+import Mobiles from "./Mobiles";
 import "./App.scss";
 // Design, UI components
 import { Layout } from "antd";
-import { Button, Form, Input } from 'antd';
 import { layoutStyle, headerStyle, siderStyle } from "../constants/UIConstants";
 // Mapping libs and files
 import * as L from "leaflet";
@@ -13,13 +14,19 @@ import type { LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FeatureGroup, MapContainer, Polygon, Popup, ScaleControl, ZoomControl, TileLayer, LayersControl } from 'react-leaflet'; //https://react-leaflet.js.org/
 import areasFromGeojson from '../public/geofiles/initial-areas.geo.json' //todo maybe import from ts or some other way
-import { initialMarkers } from '../public/geofiles/initial-markers';
+import { initialMarkers, initialMobiles } from '../public/geofiles/initial-markers';
 import { CustomLocation, DrawObjectType } from '../constants/types';
 import { convertCoordsToLatLng } from '../util/Functions';
+
+// **************************************   LEAFLET-OSM MAP   *********************************************//
 
 const initialLocation: CustomLocation = {
   name: 'Germany geocenter', initialZoom: 7, coordsLeaflet: [51.163715932396634, 10.447797582382846],
 }
+const ErfurtMercedes: CustomLocation = {
+  name: 'Mercedes Erfurt', initialZoom: 16, coordsLeaflet: [50.974079269, 10.969829791],
+}
+
 const greenOptions = { color: 'green', fillColor: 'green' }
 const purpleOptions = { color: 'purple', fillColor: 'purple' }
 
@@ -28,6 +35,7 @@ const { Header, Sider, Content } = Layout;
 export default function App() {
   const [drawObject, setDrawObject] = useState<DrawObjectType>(null);
   const [selectedBySearchObject, setSelectedBySearchObject] = useState<DrawObjectType>(null)
+  const [devicesLocations, setDevicesLocations ] = useState(initialMobiles);
 
   function saveObjectToStore(values: {areaname: string}) {
     console.log('drawObject', drawObject);
@@ -42,34 +50,21 @@ export default function App() {
     console.log('----- Push to array of markers ', drawToSave['marker']);
   };
 
+
   return (
     <Layout style={layoutStyle}>
       <Header style={headerStyle}><img height='65' src='../public/images/litelog-logo.png'></img></Header>
       <Layout>
-        <Sider width="15%" style={siderStyle}>
-          <Form
-            name="basic"
-            layout="vertical"
-            style={{ maxWidth: '90%', margin: '40px auto' }}
-            initialValues={{ areaname: '' }}
-            onFinish={saveObjectToStore}
-          >
-            <Form.Item
-              label="NEW AREA NAME"
-              name="areaname"
-            ><Input width="80"/>
-            </Form.Item>
-            <Form.Item label={null}>
-              <Button type="primary" htmlType="submit" disabled={!(selectedBySearchObject || drawObject)}>
-                Save
-              </Button>
-            </Form.Item>
-          </Form>
+        <Sider width="22%" style={siderStyle}>
+          <SidePanel
+            devicesLocations={devicesLocations}
+            setDevicesLocations={setDevicesLocations}
+            saveObjectToStore={saveObjectToStore}/>
         </Sider>
 
         <Content>
-          <MapContainer id="map-cont" center={initialLocation.coordsLeaflet as LatLngTuple}
-            zoom={initialLocation.initialZoom || 12} zoomControl={false}>
+          <MapContainer id="map-cont" center={ErfurtMercedes.coordsLeaflet as LatLngTuple}
+            zoom={ErfurtMercedes.initialZoom || 12} zoomControl={false}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer name="OSM Basic" checked={true}>
                 <TileLayer url="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
@@ -106,12 +101,15 @@ export default function App() {
                 </LayersControl.Overlay>
               }
             </LayersControl>
-            {/* if user sets an object with help of AddressSearch then we start drawing with it, otherwise empty draw */}
-            <AddressSearch setSelectedBySearchObject={setSelectedBySearchObject}/>
-            <DrawToolbar setDrawObject={setDrawObject} selectedBySearchObject={selectedBySearchObject}></DrawToolbar>
-
             <ScaleControl position="bottomleft" imperial={false} metric={true} />
             <ZoomControl position="topright"/>
+
+            {/* if user sets an object with help of AddressSearch then we start drawing with it, otherwise empty draw */}
+            <AddressSearch setSelectedBySearchObject={setSelectedBySearchObject}/>
+
+            <DrawToolbar setDrawObject={setDrawObject} selectedBySearchObject={selectedBySearchObject}></DrawToolbar>
+            
+            <Mobiles devicesLocations={devicesLocations}/>
 
           </MapContainer>
         </Content>
